@@ -14,9 +14,7 @@ def get_chromedriver(use_proxy=False, user_agent=None):
     if user_agent:
         chrome_options.add_argument('--user-agent=%s' % user_agent)
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging']);
-    driver = webdriver.Chrome(
-        os.path.join(path, 'chromedriver'),
-        options=chrome_options)
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://google.com/")
     return driver
 

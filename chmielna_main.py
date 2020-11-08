@@ -1,6 +1,6 @@
 # coding=utf8
 from discord_webhook import DiscordWebhook, DiscordEmbed
-from cookie_gen import *
+from Chmielna.cookie_gen import *
 from bs4 import BeautifulSoup
 import json
 import requests
@@ -45,10 +45,11 @@ class Chmielna:
                 curr_cookie = wait_for_cookie.get_cookie()
             self.s.cookies.set("cf_clearance", curr_cookie[self.task['proxy']])
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                          "(KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-Mode": "navigate",
+            "cache-control": "max-age=0",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,"
                       "*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "Sec-Fetch-Dest": "document",
@@ -63,7 +64,8 @@ class Chmielna:
         try:
             print(f"{datetime.datetime.now().strftime('[%H:%M:%S:%f]')} [TASK {self.task['id']}] "
                   f"Logging in...")
-            main_page = self.s.get("https://chmielna20.pl/", headers=headers, proxies=self.task['proxy_dict'], timeout=5)
+            main_page = self.s.get("https://chmielna20.pl/superstar-greencblackcblack-fw5388.html", headers=headers,
+                                   proxies=self.task['proxy_dict'], timeout=5)
             self.token = re.search(r'_token(.*?)>', main_page.text).group()[29:-2]
             login_data = f"_token={self.token}&email={self.profile['email']}&password={self.profile['password']}"
             login_headers = {
@@ -88,7 +90,8 @@ class Chmielna:
             }
             log_in = self.s.post("https://chmielna20.pl/signin", headers=login_headers, data=login_data,
                                  proxies=self.task['proxy_dict'], timeout=5)
-            while "Witaj" not in log_in.text:
+
+            while "'loggedIn': true" not in log_in.text:
                 self.error_num += 1
                 if self.error_num > 5:
                     self.error_num = 0
@@ -536,20 +539,20 @@ class Chmielna:
 
     def send_payment_data(self):
         # Pobranie
-        data = f"_token={self.token}&Delivery_form_id=1_2&Payment_id=1&" \
-               f"input_summary_city=Nie+Wybrano&input_summary_post_code=Nie+Wybrano&" \
-               f"input_summary_street=Nie+Wybrano&input_summary_province=Nie+Wybrano&" \
-               f"InPost_machineName=&InPost_machineAddress=&Payment_type_id=1&" \
-               f"parcelshop=&parcelshop_address=&pickpack_date=&" \
-               f"pickpack_time=&city_search=&personal_collection%5Bshop%5D=&" \
-               f"personal_collection%5Baddress%5D="
-        # Blik
-        # data = f"_token={self.token}&Delivery_form_id=7_1&Payment_id=9&" \
+        # data = f"_token={self.token}&Delivery_form_id=1_2&Payment_id=1&" \
         #        f"input_summary_city=Nie+Wybrano&input_summary_post_code=Nie+Wybrano&" \
         #        f"input_summary_street=Nie+Wybrano&input_summary_province=Nie+Wybrano&" \
-        #        f"InPost_machineName=&InPost_machineAddress=&Payment_type_id=&parcelshop=&" \
-        #        f"parcelshop_address=&pickpack_date=&pickpack_time=&city_search=&" \
-        #        f"personal_collection%5Bshop%5D=&personal_collection%5Baddress%5D="
+        #        f"InPost_machineName=&InPost_machineAddress=&Payment_type_id=1&" \
+        #        f"parcelshop=&parcelshop_address=&pickpack_date=&" \
+        #        f"pickpack_time=&city_search=&personal_collection%5Bshop%5D=&" \
+        #        f"personal_collection%5Baddress%5D="
+        # Blik
+        data = f"_token={self.token}&Delivery_form_id=7_1&Payment_id=9&" \
+               f"input_summary_city=Nie+Wybrano&input_summary_post_code=Nie+Wybrano&" \
+               f"input_summary_street=Nie+Wybrano&input_summary_province=Nie+Wybrano&" \
+               f"InPost_machineName=&InPost_machineAddress=&Payment_type_id=&parcelshop=&" \
+               f"parcelshop_address=&pickpack_date=&pickpack_time=&city_search=&" \
+               f"personal_collection%5Bshop%5D=&personal_collection%5Baddress%5D="
 
         headers = {
             "Sec-Fetch-Site": "same-origin",
@@ -806,10 +809,11 @@ if __name__ == "__main__":
         t.start()
         main_threads.append(t)
 
-    for i in range(3):
-        cookie_gen = Thread(target=cookie_add, args=(proxy_queue,))
-        cookie_gen.start()
-        main_threads.append(cookie_gen)
+    if is_cf_on == "n":
+        for i in range(3):
+            cookie_gen = Thread(target=cookie_add, args=(proxy_queue,))
+            cookie_gen.start()
+            main_threads.append(cookie_gen)
 
     for t in main_threads:
         t.join()
